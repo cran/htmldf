@@ -1,4 +1,4 @@
-09a2500fba74290f0dc5b3a1e300e656 *DESCRIPTION
+2a9ac3d15f579c147d168ceacca55ff5 *DESCRIPTION
 65a0e75e227928919c1bd7df5fdf7d6a *NAMESPACE
 4d413c175fce5ea38a94a49e0ccf2968 *R/get_code_lang.R
 eb35445e050f8f046e03b281fd282e7f *R/get_generator.R
@@ -11,14 +11,13 @@ f830fd02f5dfdb44b6c72b7076271594 *R/get_html.R
 3a5ab8639bf1a84bce640c1ce6d59677 *R/get_rss.R
 7ccbe6f7801d6e40aac35e8841e9092d *R/get_social.R
 a3945415d69cbb3c9c47c3ee1c6ee493 *R/get_tables.R
-ca83a112539c50d3c032e434edb4375b *R/get_time.R
+d94358f4d6a27b0ede27bb9e0f82a651 *R/get_time.R
 b959bc2a1ab2451cdb5daa96a925b5a9 *R/get_title.R
-69166ef3c02371c245a0f8c1777ba196 *R/html_df.R
+92d16d97870b65d9d7f0f6c71b7a0df2 *R/html_df.R
 13e8bbd0d5a0f89c7624aa8abcbe4d2c *R/progress.R
 6858b964c73e5f96bedfe925ebe8900b *R/string_cleaners.R
 e987c807206d72e2fd01a48f77d89dd9 *R/sysdata.rda
 2d862af267f6620f5ab4f74dba78ae09 *R/zzz.R
 99df96fd33cd72728848f3140f2d2fc1 *README.md
-10a6a33671c160993d7d368868a44cbd *inst/WORDLIST
 3f5ab4fd30208664a9a07018c36352e2 *man/figures/hex.png
 13f550b205860e4ae92938a2ee6a30bd *man/html_df.Rd
