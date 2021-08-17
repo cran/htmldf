@@ -10,7 +10,8 @@ html_df(
   wait = 0,
   time_out = 10,
   show_progress = TRUE,
-  keep_source = TRUE
+  keep_source = TRUE,
+  chrome_bin = NULL
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ to 10.}
 
 \item{keep_source}{Logical argument - whether or not to retain the contents of the page \code{source} 
 column in the output tibble.  Useful to reduce memory usage when scraping many pages.  Defaults to \code{TRUE}.}
+
+\item{chrome_bin}{(Optional) Path to a Chromium install to use Chrome in headless mode for scraping}
 }
 \value{
 A tibble with columns 
@@ -50,6 +53,7 @@ If not code tags are detected, or the language could not be inferred, value is \
 \item \code{accessed} datetime when the page was accessed
 \item \code{published} page publication or last updated date, if detected 
 \item \code{generator} the page generator, if found
+\item \code{status} HTTP status code 
 \item \code{source} character string of xml documents.  These can each be coerced to \code{xml_document}
 for further processing using \code{rvest} using \code{xml2:read_html()}.
 }

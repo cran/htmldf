@@ -14,6 +14,7 @@
 #' column in the output tibble.  Useful to reduce memory usage when scraping many pages.  Defaults to \code{TRUE}.
 #' @param time_out Time in seconds to wait for \code{httr::GET()} to complete before exiting.  Defaults 
 #' to 10. 
+#' @param chrome_bin (Optional) Path to a Chromium install to use Chrome in headless mode for scraping
 #' @return A tibble with columns 
 #' \itemize{
 #' \item \code{url} the original vector of urls provided
@@ -34,6 +35,7 @@
 #' \item \code{accessed} datetime when the page was accessed
 #' \item \code{published} page publication or last updated date, if detected 
 #' \item \code{generator} the page generator, if found
+#' \item \code{status} HTTP status code 
 #' \item \code{source} character string of xml documents.  These can each be coerced to \code{xml_document}
 #' for further processing using \code{rvest} using \code{xml2:read_html()}.
 #' }
@@ -68,6 +70,7 @@
 #' @importFrom tibble tibble
 #' @importFrom lubridate parse_date_time
 #' @importFrom utils flush.console
+#' @importFrom utils object.size
 #' @export
 
 html_df <- function(urlx, 
@@ -75,21 +78,32 @@ html_df <- function(urlx,
                     wait = 0,
                     time_out = 10, 
                     show_progress = TRUE, 
-                    keep_source = TRUE){
+                    keep_source = TRUE, 
+                    chrome_bin = NULL){
   fetch_list <- vector('list', length = length(urlx))
   # loop over pages and fetch
   if(show_progress) pb <- start_progress(total = length(urlx), prefix = 'Parsing link: ')
   for(i in seq_along(urlx)){
     if(wait > 0) Sys.sleep(wait)
-    if(show_progress) update_progress(bar = pb, iter = i, total = length(urlx), what = ifelse(is.na(urlx[i]), 'URL is NA', urlx[i]))
-    fetch_list[[i]] <- fetch_page(urlx[i], max_size = max_size, time_out = time_out, keep_source = keep_source)
+    if(show_progress){
+      # update progress bar
+      update_progress(
+        bar = pb, iter = i, total = length(urlx), 
+        what = ifelse(is.na(urlx[i]), 'URL is NA', urlx[i])
+      )
+    }
+    # cycle through urls and attempt to request each page
+    fetch_list[[i]] <- fetch_page(
+      urlx[i], max_size = max_size, 
+      time_out = time_out, keep_source = keep_source, 
+      chrome_bin = chrome_bin)
   }
   # combine into dataFrame
   z <- tibble(z = fetch_list) %>% 
     unnest_wider(z) %>%
     select(url, title, lang, url2, links, rss, tables, 
            images, social, code_lang, size, server, 
-           accessed, published, generator,
+           accessed, published, generator, status,
            source)
   # coerce the accessed dt to datetime
   accessed_dt <- suppressWarnings(try(as_datetime(z$accessed), silent = TRUE))
@@ -120,67 +134,4 @@ html_df <- function(urlx,
 }
 
 
-fetch_page <- function(url, time_out, max_size, keep_source){
-  # download page
-  pg_dl  <- get_pages(url, time_out = time_out)
-  # extract headers from the 
-  pg_hdr <- get_headers(pg_dl)
-  if(class(pg_dl) == "response"){
-    if(!is.null(max_size)){
-      if(max_size < pg_hdr$size){
-        pg_dl <- NA
-        url2  <- NA
-      } else {
-        url2  <- pg_dl$url
-      }
-    } else {
-      url2  <- pg_dl$url
-    }
-  } else {
-    url2 <- url
-  }
-  
-  # get attributes from html
-  pg_htm       <- if(grepl('file://', url)) read_html(file(url)) else get_html(pg_dl) 
-  pg_img       <- get_imgs(pg_htm, url2)
-  pg_lnk       <- get_links(pg_htm, url2)
-  pg_ttl       <- get_title(pg_htm, url = url2)
-  pg_scl       <- get_social(pg_htm)
-  pg_lng       <- get_language(pg_htm)
-  pg_rss       <- get_rss(pg_htm, url = url2)
-  pg_gen       <- get_generator(pg_htm)
-  pg_tim       <- get_time(pg_htm, url = url2)
-  pg_tbl       <- get_tables(pg_htm)
-  pg_code_lang <- guess_code_lang(pg_htm)
-  # source - sometimes coerciion to character will fail
-  pg_source    <- ifelse(
-    keep_source, 
-    ifelse(
-      'try-error' %in% class(try(as.character(pg_htm), silent = TRUE)),
-      NA, 
-      as.character(pg_htm)
-    ), 
-    NA
-  )
-  
-  # combine into list
-  pg_features <- 
-    list(url = url, 
-         url2 = url2, 
-         rss = pg_rss, 
-         title = pg_ttl, 
-         links = pg_lnk,
-         tables = pg_tbl,
-         source = pg_source,
-         social = pg_scl,
-         images = pg_img, 
-         generator = pg_gen, 
-         lang = pg_lng, 
-         server = pg_hdr$server, 
-         size = pg_hdr$size, 
-         accessed = pg_hdr$accessed,
-         published = pg_tim,
-         code_lang = pg_code_lang)
 
-  return(pg_features)
-}
