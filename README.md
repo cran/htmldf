@@ -1,10 +1,10 @@
 
 # htmldf <img src="man/figures/hex.png" align="right" width="150" />
 
-[![codecov](https://codecov.io/gh/alastairrushworth/htmldf/branch/master/graph/badge.svg)](https://codecov.io/gh/alastairrushworth/htmldf)
+[![codecov](https://codecov.io/gh/alastairrushworth/htmldf/branch/master/graph/badge.svg)](https://app.codecov.io/gh/alastairrushworth/htmldf)
 [![CRAN
-status](https://www.r-pkg.org/badges/version/htmldf)](https://cran.r-project.org/package=htmldf)
-[![](https://cranlogs.r-pkg.org/badges/htmldf)](https://cran.r-project.org/package=htmldf)
+status](https://www.r-pkg.org/badges/version/htmldf)](https://CRAN.R-project.org/package=htmldf)
+[![](https://cranlogs.r-pkg.org/badges/htmldf)](https://CRAN.R-project.org/package=htmldf)
 [![cran
 checks](https://cranchecks.info/badges/summary/htmldf)](https://cran.r-project.org/web/checks/check_results_htmldf.html)
 
@@ -27,6 +27,7 @@ contain page attributes and metadata extracted from the html, including:
 -   page size, generator and server
 -   page accessed date
 -   page published or last updated dates
+-   HTTP status code
 -   full page source html
 
 ## Installation
@@ -61,18 +62,30 @@ urlx <- c("https://alastairrushworth.github.io/Visualising-Tour-de-France-data-i
 
 # use html_df() to gather data
 z <- html_df(urlx, show_progress = FALSE)
-z
+
+# have a quick look at the first page
+glimpse(z[1, ])
 ```
 
-    ## # A tibble: 4 × 16
-    ##   url     title   lang  url2   links rss   tables images social code_lang   size
-    ##   <chr>   <chr>   <chr> <chr>  <lis> <chr> <list> <list> <list>     <dbl>  <int>
-    ## 1 https:… Visual… en    https… <tib… http… <lgl … <tibb… <tibb…     1      38104
-    ## 2 https:… A Gent… en    https… <tib… <NA>  <lgl … <tibb… <tibb…    -0.860 202528
-    ## 3 https:… Convol… en    https… <tib… <NA>  <name… <tibb… <tibb…    -0.936 113768
-    ## 4 https:… Pytorc… en    https… <tib… <NA>  <name… <tibb… <tibb…    -1     204088
-    ## # … with 5 more variables: server <chr>, accessed <dttm>, published <dttm>,
-    ## #   generator <chr>, source <chr>
+    ## Rows: 1
+    ## Columns: 17
+    ## $ url       <chr> "https://alastairrushworth.github.io/Visualising-Tour-de-Fra…
+    ## $ title     <chr> "Visualising Tour De France Data In R -"
+    ## $ lang      <chr> "en"
+    ## $ url2      <chr> "https://alastairrushworth.github.io/Visualising-Tour-de-Fra…
+    ## $ links     <list> [<tbl_df[27 x 2]>]
+    ## $ rss       <chr> "https://alastairrushworth.github.io/feed.xml"
+    ## $ tables    <list> NA
+    ## $ images    <list> [<tbl_df[8 x 3]>]
+    ## $ social    <list> [<tbl_df[3 x 3]>]
+    ## $ code_lang <dbl> 1
+    ## $ size      <int> 38445
+    ## $ server    <chr> "GitHub.com"
+    ## $ accessed  <dttm> 2022-01-13 08:58:58
+    ## $ published <dttm> 2019-11-24
+    ## $ generator <chr> NA
+    ## $ status    <int> 200
+    ## $ source    <chr> "<!DOCTYPE html>\n<!--\n  Minimal Mistakes Jekyll Theme 4.4.…
 
 To see the page titles, look at the `titles` column.
 
@@ -84,7 +97,7 @@ z %>% select(title, url2)
     ##   title                                                              url2       
     ##   <chr>                                                              <chr>      
     ## 1 Visualising Tour De France Data In R -                             https://al…
-    ## 2 A Gentle Introduction to PyTorch 1.2 | by elvis | dair.ai | Medium https://me…
+    ## 2 A Gentle Introduction to PyTorch 1.2 | by elvis | DAIR.AI | Medium https://me…
     ## 3 Convolutional Neural Network (CNN)  |  TensorFlow Core             https://ww…
     ## 4 Pytorch | Getting Started With Pytorch                             https://ww…
 
@@ -104,8 +117,8 @@ z$tables
     ## [1] NA
     ## 
     ## [[3]]
-    ## [[3]]$uncoercible
-    ## [1] "<table class=\"tfo-notebook-buttons\" align=\"left\">\n<td>\n    <a target=\"_blank\" href=\"https://www.tensorflow.org/tutorials/images/cnn\">\n    <img src=\"https://www.tensorflow.org/images/tf_logo_32px.png\">\n    View on TensorFlow.org</a>\n  </td>\n  <td>\n    <a target=\"_blank\" href=\"https://colab.research.google.com/github/tensorflow/docs/blob/master/site/en/tutorials/images/cnn.ipynb\">\n    <img src=\"https://www.tensorflow.org/images/colab_logo_32px.png\">\n    Run in Google Colab</a>\n  </td>\n  <td>\n    <a target=\"_blank\" href=\"https://github.com/tensorflow/docs/blob/master/site/en/tutorials/images/cnn.ipynb\">\n    <img src=\"https://www.tensorflow.org/images/GitHub-Mark-32px.png\">\n    View source on GitHub</a>\n  </td>\n  <td>\n    <a href=\"https://storage.googleapis.com/tensorflow_docs/docs/site/en/tutorials/images/cnn.ipynb\"><img src=\"https://www.tensorflow.org/images/download_logo_32px.png\">Download notebook</a>\n  </td>\n</table>\n"
+    ## [[3]]$`no-caption`
+    ## # A tibble: 0 × 0
     ## 
     ## 
     ## [[4]]
@@ -136,7 +149,7 @@ z$rss
     ## [3] NA                                            
     ## [4] NA
 
-`html_df()` will try to parese out any social profiles embedded or
+`html_df()` will try to parse out any social profiles embedded or
 mentioned on the page. Currently, this includes profiles for the sites
 
 -   bitbucket
@@ -218,7 +231,7 @@ z %>% select(published, url2)
     ##   <dttm>              <chr>                                                     
     ## 1 2019-11-24 00:00:00 https://alastairrushworth.github.io/Visualising-Tour-de-F…
     ## 2 2019-09-01 18:03:22 https://medium.com/dair-ai/pytorch-1-2-introduction-guide…
-    ## 3 2021-06-17 00:00:00 https://www.tensorflow.org/tutorials/images/cnn           
+    ## 3 2021-11-11 00:00:00 https://www.tensorflow.org/tutorials/images/cnn           
     ## 4 2019-09-17 03:09:28 https://www.analyticsvidhya.com/blog/2019/09/introduction…
 
 ## Comments? Suggestions? Issues?

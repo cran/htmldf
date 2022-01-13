@@ -1,27 +1,20 @@
 #' @importFrom httr GET
+#' @importFrom httr RETRY
 #' @importFrom httr HEAD
 #' @importFrom httr timeout
 
-fetch_page <- function(url, time_out, max_size, keep_source, chrome_bin){
+fetch_page <- function(url, time_out, retry_times, max_size, keep_source, chrome_bin, chrome_args, ...){
   # attempt to read from  url
-  parse_attempt <- try(httr::GET(url, httr::timeout(time_out)), silent = TRUE)
+  parse_attempt <- try(
+    httr::RETRY("GET", url, httr::timeout(time_out), times = retry_times, ...), 
+    silent = TRUE)
   if(!is.null(chrome_bin)){
     parse_attempt2 <- try(
       chrome_read_html(
         url, 
         timeout = time_out, 
-        chrome_bin = chrome_bin), 
-      silent = TRUE)
-  }
-  
-  # attempt to read from  url
-  parse_attempt <- try(httr::GET(url, httr::timeout(time_out)), silent = TRUE)
-  if(!is.null(chrome_bin)){
-    parse_attempt2 <- try(
-      chrome_read_html(
-        url, 
-        timeout = time_out, 
-        chrome_bin = chrome_bin), 
+        chrome_bin = chrome_bin, 
+        chrome_args = chrome_args), 
       silent = TRUE)
   }
   
@@ -40,7 +33,11 @@ fetch_page <- function(url, time_out, max_size, keep_source, chrome_bin){
     hdr_size   <- pg_hdr$size
     hdr_url2   <- pg_hdr$url2
     hdr_status <- pg_hdr$status
-  } 
+  } else {
+    hdr_server <- hdr_acc <- hdr_size <- hdr_url2 <- hdr_status <- NA
+  }
+  
+  # if using headless chrome, replace page source with chrome document
   if(!is.null(chrome_bin)) pg_dl <- parse_attempt2
 
   # get attributes from html

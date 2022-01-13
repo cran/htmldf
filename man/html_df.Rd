@@ -8,10 +8,13 @@ html_df(
   urlx,
   max_size = 5e+06,
   wait = 0,
-  time_out = 10,
+  retry_times = 0,
+  time_out = 30,
   show_progress = TRUE,
   keep_source = TRUE,
-  chrome_bin = NULL
+  chrome_bin = NULL,
+  chrome_args = NULL,
+  ...
 )
 }
 \arguments{
@@ -22,8 +25,10 @@ This is to avoid reading very large pages that may cause \code{read_html()} to h
 
 \item{wait}{Time in seconds to wait between successive requests. Defaults to 0.}
 
+\item{retry_times}{Number of times to retry a URL after failure.}
+
 \item{time_out}{Time in seconds to wait for \code{httr::GET()} to complete before exiting.  Defaults 
-to 10.}
+to 30.}
 
 \item{show_progress}{Logical, defaults to \code{TRUE}. Whether to show progress during download.}
 
@@ -31,6 +36,10 @@ to 10.}
 column in the output tibble.  Useful to reduce memory usage when scraping many pages.  Defaults to \code{TRUE}.}
 
 \item{chrome_bin}{(Optional) Path to a Chromium install to use Chrome in headless mode for scraping}
+
+\item{chrome_args}{(Optional) Vector of additional command-line arguments to pass to chrome}
+
+\item{...}{Additional arguments to `httr::GET()`.}
 }
 \value{
 A tibble with columns 

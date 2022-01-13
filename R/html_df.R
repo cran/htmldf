@@ -8,13 +8,16 @@
 #' @param urlx A character vector containing urls.  Local files must be prepended with \code{file://}.
 #' @param show_progress Logical, defaults to \code{TRUE}. Whether to show progress during download.
 #' @param wait Time in seconds to wait between successive requests. Defaults to 0.
+#' @param retry_times Number of times to retry a URL after failure.
 #' @param max_size Maximum size in bytes of pages to attempt to parse, defaults to \code{5000000}.
 #'   This is to avoid reading very large pages that may cause \code{read_html()} to hang.
 #' @param keep_source Logical argument - whether or not to retain the contents of the page \code{source} 
 #' column in the output tibble.  Useful to reduce memory usage when scraping many pages.  Defaults to \code{TRUE}.
 #' @param time_out Time in seconds to wait for \code{httr::GET()} to complete before exiting.  Defaults 
-#' to 10. 
+#' to 30. 
 #' @param chrome_bin (Optional) Path to a Chromium install to use Chrome in headless mode for scraping
+#' @param chrome_args (Optional) Vector of additional command-line arguments to pass to chrome
+#' @param ... Additional arguments to `httr::GET()`.
 #' @return A tibble with columns 
 #' \itemize{
 #' \item \code{url} the original vector of urls provided
@@ -73,13 +76,18 @@
 #' @importFrom utils object.size
 #' @export
 
-html_df <- function(urlx, 
-                    max_size = 5000000, 
-                    wait = 0,
-                    time_out = 10, 
-                    show_progress = TRUE, 
-                    keep_source = TRUE, 
-                    chrome_bin = NULL){
+html_df <- function(
+  urlx, 
+  max_size = 5000000, 
+  wait = 0,
+  retry_times = 0,
+  time_out = 30, 
+  show_progress = TRUE, 
+  keep_source = TRUE, 
+  chrome_bin = NULL,
+  chrome_args = NULL,
+  ...
+){
   fetch_list <- vector('list', length = length(urlx))
   # loop over pages and fetch
   if(show_progress) pb <- start_progress(total = length(urlx), prefix = 'Parsing link: ')
@@ -94,9 +102,14 @@ html_df <- function(urlx,
     }
     # cycle through urls and attempt to request each page
     fetch_list[[i]] <- fetch_page(
-      urlx[i], max_size = max_size, 
-      time_out = time_out, keep_source = keep_source, 
-      chrome_bin = chrome_bin)
+      urlx[i], 
+      max_size    = max_size, 
+      time_out    = time_out, 
+      retry_times = retry_times,
+      keep_source = keep_source, 
+      chrome_bin  = chrome_bin, 
+      chrome_args = chrome_args,
+      ...)
   }
   # combine into dataFrame
   z <- tibble(z = fetch_list) %>% 
